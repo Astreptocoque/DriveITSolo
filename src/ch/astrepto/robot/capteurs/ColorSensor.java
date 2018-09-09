@@ -14,12 +14,13 @@ public class ColorSensor extends Capteur{
 		this.sensor = this.color.getRedMode();
 		this.sampleSensor = new float[this.sensor.sampleSize()];
 	}
+	
 	public float getValue() {
 		float intensity = super.getValue();
 		
 		// ajustement de la valeur et détection év. du croisement
-		if (intensity > Track.trackMaxValue)
-			intensity = Track.trackMaxValue;
+		if (intensity > Track.maxValue)
+			intensity = Track.maxValue;
 		
 		return intensity;
 	}
@@ -27,5 +28,4 @@ public class ColorSensor extends Capteur{
 	public void close() {
 		color.close();
 	}
-
 }

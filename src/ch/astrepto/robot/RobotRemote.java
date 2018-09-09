@@ -20,13 +20,13 @@ public class RobotRemote {
 			brique = new RemoteRequestEV3(BrickFinder.find(name)[0].getIPAddress());
 		} catch (Exception e) {
 			Sound.beepSequenceUp();
-			System.out.println("La connection a echouée ! Pressez un bouton");
+			System.out.println("La connection a echouee ! Pressez un bouton");
 			System.out.println(e);
 			Button.waitForAnyPress();
 			System.exit(0);
 		}
 
-		System.out.println("Connecté a EV2");
+		System.out.println("Connecte a EV2");
 	}
 	
 	public void disConnect() {

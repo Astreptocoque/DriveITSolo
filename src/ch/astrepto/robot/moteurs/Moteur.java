@@ -1,6 +1,6 @@
 package ch.astrepto.robot.moteurs;
 
-import lejos.hardware.motor.BaseRegulatedMotor;
+import ch.astrepto.robot.RobotAttributs;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.hardware.motor.NXTRegulatedMotor;
@@ -11,7 +11,7 @@ public  class Moteur {
 
 	protected RegulatedMotor motor;
 	protected int maxSpeed = 200;
-	protected float destinationDegres;
+	protected int destinationDegres;
 	protected float currentDegres = 0;
 	
 	public Moteur(MoteursTypes type, Port port) {
@@ -33,16 +33,16 @@ public  class Moteur {
 	 * 
 	 * @param angle	en degres
 	 */
-	void goTo(int angle) {
-		motor.rotate(angle);
+	void goTo(double angle) {
+		motor.rotate(RobotAttributs.degresCourbureToDegresRoue(angle));
 	}
 	
-	public float getCurrentDegres() {
+	public double getCurrentDegres() {
 		return this.motor.getTachoCount();
 	}
 	
-	public float getCurrentRadian() {
-		return (float) (Math.PI*this.motor.getTachoCount()/180);
+	public double getCurrentRadian() {
+		return Math.toRadians(this.motor.getTachoCount());
 	}
 	
 	public boolean isPreviousMoveComplete() {

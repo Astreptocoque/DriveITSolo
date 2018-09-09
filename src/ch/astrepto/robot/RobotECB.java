@@ -5,13 +5,10 @@ import ch.astrepto.robot.capteurs.ColorSensorRemote;
 import ch.astrepto.robot.moteurs.DirectionMotor;
 import ch.astrepto.robot.moteurs.MoteursTypes;
 import ch.astrepto.robot.moteurs.TractionMotor;
-import lejos.hardware.Button;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
-import lejos.remote.ev3.RemoteRequestEV3;
-import lejos.utility.Delay;
 
-public class RobotECB implements Robot{
+public class RobotECB{
 
 	public DirectionMotor directionMotor;
 	public TractionMotor tractionMotor;
@@ -39,7 +36,7 @@ public class RobotECB implements Robot{
 
 	public void updateSpeed() {
 		// définition de la vitesse
-		tractionMotor.setSpeed(directionMotor.getCurrentRadian());
+		tractionMotor.setSpeed(RobotAttributs.degresRoueToDegresCourbure(directionMotor.getCurrentDegres()));
 	}
 
 	public float updateLightIntensity() {

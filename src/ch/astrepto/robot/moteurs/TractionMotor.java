@@ -35,17 +35,16 @@ public class TractionMotor{
 	 * la vitesse de chaque moteur sera égale
 	 * 
 	 */
-	public void setSpeed(float currentDirectionRadian) {
+	public void setSpeed(double angleCourbure) {
 		
 		int speedLeft;
 		int speedRight;
 		
-		if(currentDirectionRadian == 0) {
+		if(angleCourbure == 0) {
 			speedLeft = speed;
 			speedRight = speed;
 		}else{
-			double degresCourbure = Math.asin((RobotAttributs.diametreEngrenage * currentDirectionRadian) / ( RobotAttributs.essieu * 2));
-			double radius = RobotAttributs.baseLength/Math.tan(degresCourbure);
+			double radius = RobotAttributs.baseLength/Math.tan(Math.toRadians(angleCourbure));
 			double rotationSpeed = speed/radius;
 			
 			speedLeft = (int) (rotationSpeed*(radius- RobotAttributs.wheelSpacing/2));
@@ -92,7 +91,6 @@ public class TractionMotor{
 	 * @return le nbr de degrés de la traction
 	 */
 	public float getCurrentDegres() {
-		return (motorLeft.getCurrentDegres()+ motorRight.getCurrentDegres())/ 2 * -1;
+		return (float) ((motorLeft.getCurrentDegres()+ motorRight.getCurrentDegres())/ 2 * -1);
 	}
-
 }

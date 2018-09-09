@@ -18,8 +18,8 @@ public class ColorSensorRemote extends Capteur{
 		float intensity = super.getValue();
 		
 		// ajustement de la valeur et détection év. du croisement
-		if (intensity > Track.trackMaxValue)
-			intensity = Track.trackMaxValue;
+		if (intensity > Track.maxValue)
+			intensity = Track.maxValue;
 		
 		return intensity;
 	}

@@ -10,9 +10,8 @@ public class DriveITSolo {
 		// à faire avant de déposer le robot sur la piste
 		RobotECB rob = new RobotECB();
 		System.out.println("Placer le robot sur le cercle interne apres la priorité de droite");
-		Button.waitForAnyPress();		
-		System.out.flush();
-		Dessin.displayStart();
+		System.out.println("Appuyer pour demarrer");
+		Button.ENTER.waitForPressAndRelease();		
 		rob.robotStart();
 
 		do {
@@ -20,7 +19,7 @@ public class DriveITSolo {
 			if (!Track.inCrossroads) {
 				float intensity = rob.updateLightIntensity();
 				// Détection du carrefour
-				if ( intensity<= Track.trackCrossingValue + 1)
+				if ( intensity<= Track.blackLineValue + 1)
 					Track.crossroads = true;
 			}
 
@@ -56,9 +55,9 @@ public class DriveITSolo {
 		
 		// les roues se remettent droites
 		// correction pour le croisement
-		if (Track.trackPart == 1 && Track.trackSide == -1) 
+		if (Track.getPart() == 1 && Track.getSide() == -1) 
 			rob.directionMotor.goTo(10); 
-		 else if(Track.trackPart == -1 && Track.trackSide == -1)
+		 else if(Track.getPart() == -1 && Track.getSide() == -1)
 			 rob. directionMotor.goTo(-10); 
 		else 
 			rob.directionMotor.goTo(0);
@@ -82,14 +81,14 @@ public class DriveITSolo {
 				Track.crossroads = false;
 				Track.justAfterCrossroads = true;
 			
-				if((diff > 5 && ((Track.trackPart == 1 && Track.trackSide == -1)
-					|| (Track.trackPart == -1 && Track.trackSide == 1)))
-					|| (diff < 5 && ((Track.trackPart == 1 && Track.trackSide == 1)
-						|| (Track.trackPart == -1 && Track.trackSide == -1)))) {
-					Track.changeTrackSide();
+				if((diff > 5 && ((Track.getPart() == 1 && Track.getSide() == -1)
+					|| (Track.getPart() == -1 && Track.getSide() == 1)))
+					|| (diff < 5 && ((Track.getPart() == 1 && Track.getSide() == 1)
+						|| (Track.getPart() == -1 && Track.getSide() == -1)))) {
+					Track.changeSide();
 				}
 			
-				Track.changeTrackPart();
+				Track.changePart();
 				rob.tractionMotor.resetTachoCount();
 			}
 		}
@@ -98,6 +97,7 @@ public class DriveITSolo {
 	private static void end(RobotECB rob) {
 		rob.colorDroite.close();
 		rob.colorGauche.close();
+		rob.directionMotor.close();
 		rob.coffre.disConnect();
 	}
 	
