@@ -1,140 +1,104 @@
 package ch.astrepto.robot;
 
 import lejos.hardware.Button;
-import lejos.hardware.lcd.LCD;
-import lejos.utility.Delay;
 
 public class DriveITSolo {
-
+	
 	public static void main(String[] args) {
 
-		ConnectionCoffreDeToit.connectionEV2();
+		
 		// à faire avant de déposer le robot sur la piste
-		RobotControls rob = new RobotControls();
-		displayStart();
+		RobotECB rob = new RobotECB();
+		System.out.println("Placer le robot sur le cercle interne apres la priorité de droite");
+		Button.waitForAnyPress();		
+		System.out.flush();
+		Dessin.displayStart();
 		rob.robotStart();
 
-		boolean boucle = true;
-
 		do {
-			// GESTION DU RELEVE LUMINEUX DE LA PISTE
-			// Est maj si pas "en train de passer le carrefour" et si pas
-			// "initialisation d'un
-			// dépassement"
+			
 			if (!Track.inCrossroads) {
-				rob.updateLightIntensity();
+				float intensity = rob.updateLightIntensity();
+				// Détection du carrefour
+				if ( intensity<= Track.trackCrossingValue + 1)
+					Track.crossroads = true;
 			}
 
-			// GESTION DE LA DIRECTION AUTOMATIQUE
-			// Est maj si pas "en train de passer le crossroads", si pas "arrivé au
-			// crossroads",
-			// si pas "initialisation d'un dépassement" et si "en train de suivre la
-			// piste"
-			if (!Track.inCrossroads && !Track.crossroads) {
-				// si verifiyFreeWay est vrai, l'ultrason ne tourne pas avec les
-				// roues
-
+			if (!Track.inCrossroads && !Track.crossroads)
 				rob.updateDirection();
-
-			}
-			// GESTION DE LA VITESSE AUTOMATIQUE
-			// Est maj si pas "intialisation d'un dépassement" et si pas "vérification
-			// peut dépasser")
 			
 			rob.updateSpeed();
 
-			// GESTION DE L'ARRIVEE AU CROISEMENT
-			// Est maj si "arrivé au crossroads" mais pas "en train de passer le
-			// crossroads"
-			if (Track.crossroads && !Track.inCrossroads) {
-				rob.crossroads();
-			}
+			// entrée dans le croisement
+			if (Track.crossroads && !Track.inCrossroads) 
+				crossroads(rob);
 
-			// GESTION A L'INTERIEUR DU CROISEMENT
-			// Est maj si "en train de passer le crossroads"
-			if (Track.inCrossroads) {
-				// on attends de l'avoir passé pour redémarrer les fonctions de
-				// direction
-				rob.crossroadsEnd();
-			}
+			// sortie du croisement
+			if (Track.inCrossroads) 
+				crossroadsEnd(rob);
 
-		} while (boucle);
 
-		rob.robotStop();
-
+		} while (!Button.ESCAPE.isDown());
+		
+		end(rob);
 	}
 
-	private static void displayStart() {
-		// écran blanc
-		LCD.clear();
-		for (int i = 0; i < 128; i++) {
-			drawLine(1, 178, 0, i, 1);
-		}
+	
+	/**
+	 * Gestion du carrefour Une fois le carrefour détecté, cette section réagit en fonction du
+	 * côté du croisement
+	 */
+	public static void crossroads(RobotECB rob) {
 
-		drawArrow(-1, 20, 66, 61, 0);
-		drawArrow(1, 20, 106, 61, 0);
-		for (int i = 61; i < 101; i++) {
-			drawLine(1, 40, 66, i, 0);
-		}
-
-		drawArrow(-1, 20, 68, 63, 1);
-		drawArrow(1, 20, 108, 63, 1);
-		for (int i = 63; i < 103; i++) {
-			drawLine(1, 40, 69, i, 1);
-		}
-
-		drawArrow(-1, 20, 70, 65, 0);
-		drawArrow(1, 20, 110, 65, 0);
-		for (int i = 65; i < 105; i++) {
-			drawLine(1, 40, 71, i, 0);
-		}
-		LCD.drawString("......START.......", 0, 1, true);
-
-		LCD.drawString("ENTER", 7, 5, false);
-
-		Button.ENTER.waitForPress();
-		LCD.clear();
+		// indique qu'on est en train de passer le croisement
+		Track.inCrossroads = true;
+		rob.tractionMotor.resetTachoCount();
+		
+		// les roues se remettent droites
+		// correction pour le croisement
+		if (Track.trackPart == 1 && Track.trackSide == -1) 
+			rob.directionMotor.goTo(10); 
+		 else if(Track.trackPart == -1 && Track.trackSide == -1)
+			 rob. directionMotor.goTo(-10); 
+		else 
+			rob.directionMotor.goTo(0);
 	}
 
-	private static void drawArrow(int direction, int size, int x, int y, int color) {
-		int xi = 0;
-		int yj = 0;
-		int i = 1;
-		while (yj != size * 2) {
+	/**
+	 * Gestion de la détection de la fin du carrefour Détecte la fin du carrefour et maj les
+	 * indications de piste
+	 */
+	public static void crossroadsEnd(RobotECB rob) {
+		// on attends de l'avoir passé pour redémarrer les fonctions de direction
+		if (rob.tractionMotor.getCurrentDegres() >= Track.crossroadsLength / RobotAttributs.cmInDegres) {
 
-			xi = 0;
-			do {
-				if (direction == -1)
-					LCD.setPixel(x - xi, y + yj, color);
-				else
-					LCD.setPixel(x + xi, y + yj, color);
-				xi += 1;
-			} while (xi != i);
+			int intensityGauche = (int) rob.colorGauche.getValue();
+			int intensityDroite = (int) rob.colorDroite.getValue();
 
-			yj += 1;
-
-			if (yj > size)
-				i -= 1;
-			else
-				i += 1;
-		}
-	}
-
-	private static void drawLine(int direction, int size, int x, int y, int color) {
-
-		if (direction == 1) {
-			int xi = 0;
-			while (xi != size) {
-				LCD.setPixel(x + xi, y, color);
-				xi += 1;
-			}
-		} else {
-			int yj = 0;
-
-			while (yj != size) {
-				LCD.setPixel(x, y + yj, color);
-				yj += 1;
+			int diff = intensityGauche - intensityDroite;
+			
+			if(Math.abs(diff) > 5) {
+				Track.inCrossroads = false;
+				Track.crossroads = false;
+				Track.justAfterCrossroads = true;
+			
+				if((diff > 5 && ((Track.trackPart == 1 && Track.trackSide == -1)
+					|| (Track.trackPart == -1 && Track.trackSide == 1)))
+					|| (diff < 5 && ((Track.trackPart == 1 && Track.trackSide == 1)
+						|| (Track.trackPart == -1 && Track.trackSide == -1)))) {
+					Track.changeTrackSide();
+				}
+			
+				Track.changeTrackPart();
+				rob.tractionMotor.resetTachoCount();
 			}
 		}
 	}
+
+	private static void end(RobotECB rob) {
+		rob.colorDroite.close();
+		rob.colorGauche.close();
+		rob.coffre.disConnect();
+	}
+	
 }

@@ -1,19 +1,19 @@
 package ch.astrepto.robot.capteurs;
 
+import ch.astrepto.robot.RobotRemote;
 import ch.astrepto.robot.Track;
-import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
 
-public class ColorSensor extends Capteur{
+public class ColorSensorRemote extends Capteur{
 	
 	private EV3ColorSensor color;
-
-	public ColorSensor(Port port){
-		this.port = port;
-		this.color= new EV3ColorSensor(port);
+	
+	public ColorSensorRemote(RobotRemote coffre, String port){
+		this.color = new EV3ColorSensor(coffre.brique.getPort(port));
 		this.sensor = this.color.getRedMode();
 		this.sampleSensor = new float[this.sensor.sampleSize()];
 	}
+	
 	public float getValue() {
 		float intensity = super.getValue();
 		
@@ -23,9 +23,9 @@ public class ColorSensor extends Capteur{
 		
 		return intensity;
 	}
-	
+
 	public void close() {
 		color.close();
 	}
-
+	
 }

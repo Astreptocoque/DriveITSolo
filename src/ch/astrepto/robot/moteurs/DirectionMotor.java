@@ -2,91 +2,94 @@ package ch.astrepto.robot.moteurs;
 
 import ch.astrepto.robot.Track;
 import ch.astrepto.robot.capteurs.ColorSensor;
+import ch.astrepto.robot.capteurs.TouchSensorEV3;
+import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
 import lejos.hardware.port.MotorPort;
+import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3TouchSensor;
 import lejos.robotics.SampleProvider;
+import lejos.utility.Delay;
 
-public class DirectionMotor {
-
-	private EV3MediumRegulatedMotor directionMotor;
-
-	private SampleProvider directionTouchSensor;
-	private float[] sampleDirectionTouchSensor;
-
-	private final static int maxSpeed = 400;
+public class DirectionMotor extends Moteur{
+	
 	public final static int maxDegree = 120; // de droit à un bord
 	public final static int maxAngle = 40; // 132 degrés = 43 degré du cercle
-	public final static double wheelBase = 13d; // 13 cm, l'empattement (espace entre roues
-							// arrières et avant)
-	private static int currentAngleDestination;
 
-	public DirectionMotor() {
-		directionMotor = new EV3MediumRegulatedMotor(MotorPort.A);
-		directionTouchSensor = new EV3TouchSensor(SensorPort.S2).getTouchMode();
-		sampleDirectionTouchSensor = new float[directionTouchSensor.sampleSize()];
-		directionMotor.setSpeed(maxSpeed);
+	TouchSensorEV3 directionTouchSensor ;
+	
+	public DirectionMotor(MoteursTypes type, Port port) {
+		super(type, port);
+		this.maxSpeed = 200;
+		this.motor.setSpeed(this.maxSpeed);
+		this.directionTouchSensor = new TouchSensorEV3(SensorPort.S2);
+	
+		initPosition();
+		
+	}
 
+	private void initPosition() {
+		
+		motor.backward();
 		// cadrage du moteur, où qu'il soit
-		directionMotor.backward();
 		boolean boucle = true;
 		int sens = -1;
 		boolean firstIteration = true;
 
 		while (boucle) {
-			directionTouchSensor.fetchSample(sampleDirectionTouchSensor, 0);
-
+			int touch = (int) directionTouchSensor.getValue();
 			// si le capteur est pressé
-			if (sampleDirectionTouchSensor[0] == 1 && firstIteration) {
-				directionMotor.rotate(80);
-				directionMotor.backward();
+			if (touch > 0 && firstIteration) {
+				motor.rotate(80);
+				motor.backward();
 			}
 
-			else if (sampleDirectionTouchSensor[0] == 1) {
+			else if (touch > 0) {
 				// si la roue vient de la gauche ou de la droite
-				directionMotor.rotate(positioningAdjustment(sens));
+				motor.rotate(positioningAdjustment(sens));
 				boucle = false;
 
-			} else if (directionMotor.isStalled()) {
-				directionMotor.forward();
+			} else if (motor.isStalled()) {
+				motor.forward();
 				sens = 1;
 			}
 			firstIteration = false;
 		}
-		directionMotor.resetTachoCount();
+		motor.resetTachoCount();
 	}
 
 	/**
 	 * Gestion de la direction des roues avants
 	 * @param angleP
-	 *                angle auquel on veut se rendre
+	 *                angle auquel on veut se rendre, en degres de roue
 	 */
-	public void goTo(int angleP) {
+	@Override
+	public void goTo(int angle) {
 		// arrête le moteur s'il est en train de bouger
-		if (directionMotor.isMoving())
-			directionMotor.stop();
+		if (motor.isMoving())
+			motor.stop();
 
-		int currentAngle = directionMotor.getTachoCount();
+		float currentAngle = super.getCurrentDegres();
 
 		// transformation de l'angle final en nombre de ° que doit faire le robot
-		int angle;
+		float angleToDo;
 
 		// si l'angle est supérieure au maximum à gauche
-		if (angleP < -maxDegree) {
-			angle = -maxDegree - currentAngle;
-			currentAngleDestination = -maxDegree;
+		if (angle < -maxDegree) {
+			angleToDo = -maxDegree - currentAngle;
+			destinationDegres = -maxDegree;
 			// si l'angle est supérieur au max à droite
-		} else if (angleP > maxDegree) {
-			angle = maxDegree - currentAngle;
-			currentAngleDestination = maxDegree;
+		} else if (angle > maxDegree) {
+			angleToDo = maxDegree - currentAngle;
+			destinationDegres = maxDegree;
 			// sinon
 		} else {
-			angle = angleP - currentAngle;
-			currentAngleDestination = angleP;
+			angleToDo = angle - currentAngle;
+			destinationDegres = angle;
 		}
 
-		directionMotor.rotate((int)(angle/1f), true);
+		motor.rotate((int)(angleToDo/1f), true);
 
 	}
 
@@ -101,7 +104,7 @@ public class DirectionMotor {
 	 *                intensité de la piste précédemment mesurée
 	 * @return le nbr de degré de rotation
 	 */
-	public int determineAngle(float intensity) {
+	public int angleFunctionOfIntensity(float intensity) {
 		int angle = 0;
 		// valeur d'angle dans le sens opposé (a pour effet de déplacer le zéro des roues
 		// sur le dégradé
@@ -110,39 +113,24 @@ public class DirectionMotor {
 		// on determine la nouvelle valeur de degré à tourner au robot
 		if (Track.trackSide == 1 && Track.trackPart == 1) {
 			angle = (int) ((((maxDegree + negativeAngle) - (maxDegree + negativeAngle)
-					/ (ColorSensor.trackMaxValue - ColorSensor.trackMinValue)
-					* (intensity - ColorSensor.trackMinValue)) - negativeAngle) * -1);
+					/ (Track.trackMaxValue - Track.trackMinValue)
+					* (intensity - Track.trackMinValue)) - negativeAngle) * -1);
 		} else if (Track.trackSide == -1 && Track.trackPart == -1) {
 			angle = (int) (((maxDegree + negativeAngle)
-					/ (ColorSensor.trackMaxValue - ColorSensor.trackMinValue)
-					* (intensity - ColorSensor.trackMinValue)) - negativeAngle);
+					/ (Track.trackMaxValue - Track.trackMinValue)
+					* (intensity - Track.trackMinValue)) - negativeAngle);
 		} else if (Track.trackSide == 1 && Track.trackPart == -1) {
 			angle = (int) ((((maxDegree + negativeAngle) - (maxDegree + negativeAngle)
-					/ (ColorSensor.trackMaxValue - ColorSensor.trackMinValue)
-					* (intensity - ColorSensor.trackMinValue)) - negativeAngle));
+					/ (Track.trackMaxValue - Track.trackMinValue)
+					* (intensity - Track.trackMinValue)) - negativeAngle));
 		} else if (Track.trackSide == -1 && Track.trackPart == 1) {
 			angle = (int) ((((maxDegree + negativeAngle)
-					/ (ColorSensor.trackMaxValue - ColorSensor.trackMinValue)
-					* (intensity - ColorSensor.trackMinValue)) - negativeAngle) * -1);
+					/ (Track.trackMaxValue - Track.trackMinValue)
+					* (intensity - Track.trackMinValue)) - negativeAngle) * -1);
 		}
 		return angle;
 	}
 
-	/**
-	 *  
-	 * @return vrai si le moteur a fini son précédent mouvement
-	 */
-	public boolean previousMoveComplete() {
-		return !directionMotor.isMoving();
-	}
-
-	/**
-	 * ATTENTION : ne renvoi pas l'angle actuel du robot mais l'angle final.
-	 * @return le degré du robot
-	 */
-	public static int getCurrentAngle() {
-		return currentAngleDestination;
-	}
 
 	/**
 	 * comme le capteur tactile n'est pas pressé exactement au centre, mais un peu avant et de
