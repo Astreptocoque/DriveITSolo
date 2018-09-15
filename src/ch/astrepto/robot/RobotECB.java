@@ -34,9 +34,9 @@ public class RobotECB{
 			directionMotor.goTo(directionMotor.angleFunctionOfIntensity(intensity));
 	}
 
-	public void updateSpeed() {
+	public double updateSpeed() {
 		// définition de la vitesse
-		tractionMotor.setSpeed(RobotAttributs.degresRoueToDegresCourbure(directionMotor.getCurrentDegres()));
+		return tractionMotor.setSpeed(RobotAttributs.degresRoueToDegresCourbure(directionMotor.getCurrentDegres()));
 	}
 
 	public float updateLightIntensity() {

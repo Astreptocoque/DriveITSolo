@@ -13,6 +13,7 @@ public class DriveITSolo {
 		System.out.println("Appuyer pour demarrer");
 		Button.ENTER.waitForPressAndRelease();		
 		rob.robotStart();
+		double speed = 0;
 
 		do {
 			
@@ -26,7 +27,8 @@ public class DriveITSolo {
 			if (!Track.inCrossroads && !Track.crossroads)
 				rob.updateDirection();
 			
-			rob.updateSpeed();
+			if(!Track.crossroads || Track.inCrossroads)
+				speed = rob.updateSpeed();
 
 			// entrée dans le croisement
 			if (Track.crossroads && !Track.inCrossroads) 
@@ -35,8 +37,10 @@ public class DriveITSolo {
 			// sortie du croisement
 			if (Track.inCrossroads) 
 				crossroadsEnd(rob);
-
-
+			
+			System.out.println(speed);
+			System.out.println("lol");
+			
 		} while (!Button.ESCAPE.isDown());
 		
 		end(rob);
@@ -51,16 +55,18 @@ public class DriveITSolo {
 
 		// indique qu'on est en train de passer le croisement
 		Track.inCrossroads = true;
+		rob.tractionMotor.move(false);
 		rob.tractionMotor.resetTachoCount();
-		
 		// les roues se remettent droites
 		// correction pour le croisement
 		if (Track.getPart() == 1 && Track.getSide() == -1) 
-			rob.directionMotor.goTo(10); 
+			rob.directionMotor.goTo(0); 
 		 else if(Track.getPart() == -1 && Track.getSide() == -1)
-			 rob. directionMotor.goTo(-10); 
+			 rob. directionMotor.goTo(0); 
 		else 
 			rob.directionMotor.goTo(0);
+		rob.directionMotor.waitComplete();
+		rob.tractionMotor.move(true);
 	}
 
 	/**
@@ -90,6 +96,12 @@ public class DriveITSolo {
 			
 				Track.changePart();
 				rob.tractionMotor.resetTachoCount();
+			}
+			
+			if(Track.getSide() == 1) {
+				rob.tractionMotor.setMaxSpeed(RobotAttributs.maxSpeedBigSide);
+			}else {
+				rob.tractionMotor.setMaxSpeed(RobotAttributs.maxSpeedLittleSide);
 			}
 		}
 	}

@@ -6,6 +6,8 @@ public abstract class RobotAttributs {
 	public final static float baseLength = 13f;
 	public final static double diametreEngrenage = 1.25f;
 	public final static double essieu = 1.7f;
+	public final static int maxSpeedBigSide = 500;
+	public final static int maxSpeedLittleSide = 300;
 	
 	public static int degresCourbureToDegresRoue(double angle) {
 		

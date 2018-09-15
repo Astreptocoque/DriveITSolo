@@ -3,7 +3,7 @@ package ch.astrepto.robot;
 public abstract class Track {
 
 	// VARIABLES POUR LA SITUATION SUR LA PISTE
-	private static int side = -1; // 1 si grand, -1 si petit
+	private static int side = 1; // 1 si grand, -1 si petit
 	private static int part = 1; // 1 côté avec priorité de droite, -1 côté prioritaire
 	public final static float smallRadius = 15;
 	public final static float largeRadius = 55;

@@ -17,7 +17,7 @@ public class TractionMotor{
 	public TractionMotor(MoteursTypes type, Port portLeft, Port portRight) {
 		motorLeft = new Moteur(type, portLeft);
 		motorRight = new Moteur(type, portRight);	
-		this.speed = 600;
+		this.speed = RobotAttributs.maxSpeedBigSide;
 
 		synchro = new EV3LargeRegulatedMotor[1];
 		synchro[0] = motorRight.motor;
@@ -35,7 +35,7 @@ public class TractionMotor{
 	 * la vitesse de chaque moteur sera égale
 	 * 
 	 */
-	public void setSpeed(double angleCourbure) {
+	public double setSpeed(double angleCourbure) {
 		
 		int speedLeft;
 		int speedRight;
@@ -52,8 +52,12 @@ public class TractionMotor{
 		}
 		
 		// set la vitesse
+		motorLeft.motor.startSynchronization();
 		motorLeft.motor.setSpeed(speedLeft);
 		motorRight.motor.setSpeed(speedRight);
+		motorLeft.motor.endSynchronization();
+		
+		return speed;
 	}
 
 
@@ -67,6 +71,8 @@ public class TractionMotor{
 		motorLeft.motor.startSynchronization();
 
 		if (move) {
+		//	motorLeft.motor.setSpeed(200);
+		//	motorLeft.motor.setSpeed(200);
 			motorLeft.motor.backward();
 			motorRight.motor.backward();
 		} else {
@@ -92,5 +98,9 @@ public class TractionMotor{
 	 */
 	public float getCurrentDegres() {
 		return (float) ((motorLeft.getCurrentDegres()+ motorRight.getCurrentDegres())/ 2 * -1);
+	}
+	
+	public void setMaxSpeed(int speed) {
+		this.speed = speed;
 	}
 }
