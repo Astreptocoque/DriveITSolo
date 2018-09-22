@@ -3,6 +3,7 @@ package ch.astrepto.robot.moteurs;
 import ch.astrepto.robot.RobotAttributs;
 import ch.astrepto.robot.Track;
 import ch.astrepto.robot.capteurs.TouchSensorEV3;
+import ch.astrepto.robot.capteurs.TouchSensorEV3Remote;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
 
@@ -11,13 +12,13 @@ public class DirectionMotor extends Moteur {
 	public final static int maxDegreeRoue = 120; // de droit à un bord
 	public final static double maxDegreCourbureDegres = RobotAttributs.degresRoueToDegresCourbure(maxDegreeRoue);
 
-	private TouchSensorEV3 directionTouchSensor;
+	private TouchSensorEV3Remote directionTouchSensor;
 
-	public DirectionMotor(MoteursTypes type, Port port) {
+	public DirectionMotor(MoteursTypes type, Port port, TouchSensorEV3Remote directionTouch) {
 		super(type, port);
-		this.maxSpeed = 200;
+		this.maxSpeed = RobotAttributs.maxSpeedDirection;
 		this.motor.setSpeed(this.maxSpeed);
-		this.directionTouchSensor = new TouchSensorEV3(SensorPort.S2);
+		this.directionTouchSensor = directionTouch;
 
 		initPosition();
 	}
@@ -63,7 +64,6 @@ public class DirectionMotor extends Moteur {
 		// arrête le moteur s'il est en train de bouger
 		if (motor.isMoving())
 			motor.stop();
-		System.out.println(angleCourbure);
 		
 		double angle =  -RobotAttributs.degresCourbureToDegresRoue(angleCourbure);
 		double currentAngle = super.getCurrentDegres();
@@ -94,20 +94,21 @@ public class DirectionMotor extends Moteur {
 		double angleCourbure;
 		double angleForMaxLum;
 		double angleForMinLum;
-		int angleCourbureContreDirection = 0;
+		double angleCourbureContreDirection = 0;
+		double angleCourbureDirection = maxDegreCourbureDegres-10;
 		
 		//en fonction du coté de la piste
 		if(Track.getPart() == 1 && Track.getSide() == 1) {
 			angleForMaxLum = -angleCourbureContreDirection;
-			angleForMinLum = maxDegreCourbureDegres;
+			angleForMinLum = angleCourbureDirection;
 		}else if (Track.getPart() == 1 && Track.getSide() == -1) {
-			angleForMaxLum = maxDegreCourbureDegres;
+			angleForMaxLum = angleCourbureDirection;
 			angleForMinLum = -angleCourbureContreDirection;
 		}else if (Track.getPart() == -1 && Track.getSide() == 1) {
 			angleForMaxLum = angleCourbureContreDirection;
-			angleForMinLum =  -maxDegreCourbureDegres;
+			angleForMinLum =  -angleCourbureDirection;
 		}else {
-			angleForMaxLum = -maxDegreCourbureDegres;
+			angleForMaxLum = -angleCourbureDirection;
 			angleForMinLum =  angleCourbureContreDirection;
 		}
 		
@@ -131,9 +132,9 @@ public class DirectionMotor extends Moteur {
 	private int positioningAdjustment(int sens) {
 		int angle;
 		if (sens == 1) { // gauche
-			angle = 50;
+			angle = 55;
 		} else {
-			angle = -23; // droite
+			angle = -20; // droite
 		}
 		return angle;
 	}

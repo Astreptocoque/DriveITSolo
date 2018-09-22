@@ -15,14 +15,14 @@ public abstract class Track {
 	// var permettant d'atténuer l'angle détecté juste après le carrefour et au démarrage
 	public static boolean justAfterCrossroads = true;
 
-	public final static float crossroadsLength = 50; // en cm
+	public final static float crossroadsLength = 60; // en cm
 	// longueur minimal d'un côté de la piste
 	public final static float trackPartLength = (float) (((smallRadius + gradientWidth) * 2 * Math.PI)/RobotAttributs.cmInDegres);
 	// le bout droit + le 1/4 du petit virage de la piste + une marge de 10, en degrés
 	public final static float overtakingLength = (float) ((crossroadsLength
 			+ ((smallRadius + gradientWidth / 2) * 2 * Math.PI) / 4) + 10) / RobotAttributs.cmInDegres;
 
-	public static final int maxValue = 60; // blanc
+	public static final int maxValue = 58; // blanc
 	public static final int minValue = 4; // bleu foncé
 	public static final int blackLineValue = 2; // ligne noire
 	

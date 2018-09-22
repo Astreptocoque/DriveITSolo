@@ -8,10 +8,13 @@ public class DriveITSolo {
 
 		
 		// à faire avant de déposer le robot sur la piste
+		Button.LEDPattern(6);
 		RobotECB rob = new RobotECB();
-		System.out.println("Placer le robot sur le cercle interne apres la priorité de droite");
+		System.out.println("Placer le robot sur le cercle externe apres la priorité de droite");
 		System.out.println("Appuyer pour demarrer");
-		Button.ENTER.waitForPressAndRelease();		
+		Button.LEDPattern(1);
+		rob.touch.waitForPressAndRelease();	
+		Button.LEDPattern(0);
 		rob.robotStart();
 		double speed = 0;
 
@@ -39,10 +42,11 @@ public class DriveITSolo {
 				crossroadsEnd(rob);
 			
 			System.out.println(speed);
-			System.out.println("lol");
+			System.out.println("Lol");
 			
-		} while (!Button.ESCAPE.isDown());
+		} while (!rob.touch.isPressed());
 		
+	
 		end(rob);
 	}
 
@@ -54,14 +58,15 @@ public class DriveITSolo {
 	public static void crossroads(RobotECB rob) {
 
 		// indique qu'on est en train de passer le croisement
-		Track.inCrossroads = true;
 		rob.tractionMotor.move(false);
 		rob.tractionMotor.resetTachoCount();
+		Track.inCrossroads = true;
+
 		// les roues se remettent droites
 		// correction pour le croisement
-		if (Track.getPart() == 1 && Track.getSide() == -1) 
-			rob.directionMotor.goTo(0); 
-		 else if(Track.getPart() == -1 && Track.getSide() == -1)
+		if ((Track.getPart() == 1 && Track.getSide() == -1) || (Track.getPart() == 1 && Track.getSide() == 1)) //|| (Track.getPart() == -1 && Track.getSide() == 1) 
+			rob.directionMotor.goTo(-5); 
+		 else if((Track.getPart() == -1 && Track.getSide() == -1) )
 			 rob. directionMotor.goTo(0); 
 		else 
 			rob.directionMotor.goTo(0);
@@ -110,7 +115,8 @@ public class DriveITSolo {
 		rob.colorDroite.close();
 		rob.colorGauche.close();
 		rob.directionMotor.close();
-		rob.coffre.disConnect();
+		rob.touch.close();
+		rob.directionTouchSensor.close();
 	}
 	
 }

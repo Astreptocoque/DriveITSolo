@@ -71,8 +71,8 @@ public class TractionMotor{
 		motorLeft.motor.startSynchronization();
 
 		if (move) {
-		//	motorLeft.motor.setSpeed(200);
-		//	motorLeft.motor.setSpeed(200);
+			motorLeft.motor.setSpeed(200);
+			motorRight.motor.setSpeed(200);
 			motorLeft.motor.backward();
 			motorRight.motor.backward();
 		} else {
